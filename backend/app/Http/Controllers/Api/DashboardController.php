@@ -14,8 +14,8 @@ class DashboardController extends Controller
         $user = auth('api')->user();
 
         // Stats des équipements (Pour admin et info globale)
-        $availableEquipments = Equipment::where('status', Equipment::STATUS_AVAILABLE)->count();
-        $reservedEquipments = Equipment::where('status', Equipment::STATUS_RESERVED)->count();
+        $availableEquipments = Equipment::where('status', Equipment::STATUS_DISPONIBLE)->count();
+        $reservedEquipments = Equipment::where('status', Equipment::STATUS_RESERVE)->count();
         $maintenanceEquipments = Equipment::where('status', Equipment::STATUS_MAINTENANCE)->count();
 
         // Mes réservations (Pour l'utilisateur connecté)
