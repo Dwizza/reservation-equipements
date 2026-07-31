@@ -5,41 +5,37 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
-use App\Models\User;
-use Illuminate\Support\Facades\Hash;
+use App\Services\AuthService;
 
 class AuthController extends Controller
 {
+    protected $authService;
+
+    public function __construct(AuthService $authService)
+    {
+        $this->authService = $authService;
+    }
+
     public function register(RegisterRequest $request)
     {
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'role' => 'user',
-        ]);
-
-        $token = auth('api')->login($user);
+        $result = $this->authService->register($request->validated());
 
         return response()->json([
             'message' => 'User registered successfully',
-            'user' => $user,
-            'token' => $token,
+            'user' => $result['user'],
+            'token' => $result['token'],
         ], 201);
     }
 
     public function login(LoginRequest $request)
     {
-        $credentials = $request->only('email', 'password');
+        $result = $this->authService->login($request->only('email', 'password'));
 
-        if (!$token = auth('api')->attempt($credentials)) {
+        if (!$result) {
             return response()->json(['error' => 'Invalid credentials'], 401);
         }
 
-        return response()->json([
-            'user' => auth('api')->user(),
-            'token' => $token,
-        ]);
+        return response()->json($result);
     }
 
     public function me()
@@ -49,7 +45,7 @@ class AuthController extends Controller
 
     public function logout()
     {
-        auth('api')->logout();
+        $this->authService->logout();
         return response()->json(['message' => 'Successfully logged out']);
     }
 }
