@@ -7,7 +7,8 @@ import {
   CalendarClock, 
   Wrench,
   Clock,
-  ArrowRight
+  ArrowRight,
+  AlertCircle
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -24,7 +25,7 @@ const StatCard = ({ title, value, icon: Icon, colorClass, bgColorClass }) => (
 );
 
 const Dashboard = () => {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -64,54 +65,135 @@ const Dashboard = () => {
     );
   }
 
+  // --- RENDU ADMIN ---
+  if (isAdmin()) {
+    return (
+      <div className="space-y-8">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">Tableau de bord (Admin)</h1>
+          <p className="text-slate-500 mt-1">Supervision de tous les équipements et réservations.</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <StatCard 
+            title="Réservations en attente" 
+            value={stats?.admin_stats?.pending_reservations || 0} 
+            icon={AlertCircle} 
+            colorClass="text-red-600"
+            bgColorClass="bg-red-50"
+          />
+          <StatCard 
+            title="Équipements Disponibles" 
+            value={stats?.equipments.available || 0} 
+            icon={CheckCircle2} 
+            colorClass="text-emerald-600"
+            bgColorClass="bg-emerald-50"
+          />
+          <StatCard 
+            title="En Réservation" 
+            value={stats?.equipments.reserved || 0} 
+            icon={CalendarClock} 
+            colorClass="text-indigo-600"
+            bgColorClass="bg-indigo-50"
+          />
+          <StatCard 
+            title="En Maintenance" 
+            value={stats?.equipments.maintenance || 0} 
+            icon={Wrench} 
+            colorClass="text-amber-600"
+            bgColorClass="bg-amber-50"
+          />
+        </div>
+
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+          <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
+            <h2 className="text-lg font-bold text-slate-800">Toutes les réservations récentes</h2>
+            <Link to="/reservations" className="text-sm font-medium text-indigo-600 hover:text-indigo-700 flex items-center">
+              Gérer les réservations <ArrowRight className="w-4 h-4 ml-1" />
+            </Link>
+          </div>
+          
+          <div className="overflow-x-auto">
+            {stats?.admin_stats?.recent_all && stats.admin_stats.recent_all.length > 0 ? (
+              <table className="w-full text-left text-sm text-slate-600">
+                <thead className="bg-slate-50 text-slate-500 font-medium">
+                  <tr>
+                    <th className="px-6 py-4">Utilisateur</th>
+                    <th className="px-6 py-4">Équipement</th>
+                    <th className="px-6 py-4">Dates</th>
+                    <th className="px-6 py-4">Statut</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {stats.admin_stats.recent_all.map((reservation) => (
+                    <tr key={reservation.id} className="hover:bg-slate-50/50 transition-colors">
+                      <td className="px-6 py-4 font-medium text-slate-900">
+                        {reservation.user?.name}
+                      </td>
+                      <td className="px-6 py-4 text-slate-700">
+                        {reservation.equipment?.name}
+                      </td>
+                      <td className="px-6 py-4 flex items-center">
+                        <Clock className="w-4 h-4 mr-2 text-slate-400" />
+                        {new Date(reservation.start_date).toLocaleDateString('fr-FR')} - {new Date(reservation.end_date).toLocaleDateString('fr-FR')}
+                      </td>
+                      <td className="px-6 py-4">
+                        {getStatusBadge(reservation.status)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <div className="text-center py-12">
+                <p className="text-slate-500 font-medium">Aucune réservation récente dans le système.</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // --- RENDU UTILISATEUR SIMPLE ---
   return (
     <div className="space-y-8">
-      {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">Tableau de bord</h1>
+        <h1 className="text-2xl font-bold text-slate-900">Mon Espace</h1>
         <p className="text-slate-500 mt-1">
-          Bonjour <span className="font-semibold text-slate-700">{user?.name}</span>, voici un aperçu de vos activités.
+          Bonjour <span className="font-semibold text-slate-700">{user?.name}</span>, voici vos statistiques.
         </p>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <StatCard 
-          title="Disponibles" 
-          value={stats?.equipments.available || 0} 
-          icon={CheckCircle2} 
-          colorClass="text-emerald-600"
-          bgColorClass="bg-emerald-50"
-        />
-        <StatCard 
-          title="Réservés" 
-          value={stats?.equipments.reserved || 0} 
-          icon={CalendarClock} 
-          colorClass="text-indigo-600"
-          bgColorClass="bg-indigo-50"
-        />
-        <StatCard 
-          title="En maintenance" 
-          value={stats?.equipments.maintenance || 0} 
-          icon={Wrench} 
-          colorClass="text-amber-600"
-          bgColorClass="bg-amber-50"
-        />
-        <StatCard 
-          title="Mes réservations" 
+          title="Mes Réservations" 
           value={stats?.my_reservations.count || 0} 
           icon={MonitorSmartphone} 
           colorClass="text-sky-600"
           bgColorClass="bg-sky-50"
         />
+        <StatCard 
+          title="Équipements Disponibles" 
+          value={stats?.equipments.available || 0} 
+          icon={CheckCircle2} 
+          colorClass="text-emerald-600"
+          bgColorClass="bg-emerald-50"
+        />
+        <div className="bg-indigo-600 rounded-2xl p-6 shadow-sm border border-indigo-500 flex flex-col justify-center items-center text-center text-white">
+          <MonitorSmartphone className="w-8 h-8 mb-3 opacity-90" />
+          <h3 className="text-lg font-bold">Besoin d'un équipement ?</h3>
+          <Link to="/equipments" className="mt-3 bg-white text-indigo-600 hover:bg-indigo-50 px-4 py-2 rounded-xl text-sm font-semibold transition-colors">
+            Réserver maintenant
+          </Link>
+        </div>
       </div>
 
-      {/* Recent Reservations Table */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
         <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
           <h2 className="text-lg font-bold text-slate-800">Mes réservations récentes</h2>
           <Link to="/reservations" className="text-sm font-medium text-indigo-600 hover:text-indigo-700 flex items-center">
-            Voir tout <ArrowRight className="w-4 h-4 ml-1" />
+            Historique complet <ArrowRight className="w-4 h-4 ml-1" />
           </Link>
         </div>
         
@@ -153,9 +235,6 @@ const Dashboard = () => {
                 <CalendarClock className="w-8 h-8 text-slate-300" />
               </div>
               <p className="text-slate-500 font-medium">Aucune réservation pour le moment</p>
-              <Link to="/equipments" className="mt-4 inline-block text-sm font-semibold text-indigo-600 hover:text-indigo-700">
-                Parcourir les équipements
-              </Link>
             </div>
           )}
         </div>
