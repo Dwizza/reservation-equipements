@@ -16,6 +16,7 @@ Route::prefix('auth')->group(function () {
 });
 
 Route::middleware('auth:api')->group(function () {
+    Route::get('dashboard/stats', [\App\Http\Controllers\Api\DashboardController::class, 'stats']);
     Route::apiResource('equipments', EquipmentController::class);
     Route::apiResource('reservations', \App\Http\Controllers\Api\ReservationController::class);
 });
