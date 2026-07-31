@@ -18,8 +18,8 @@ const ReservationModal = ({ isOpen, onClose, equipment, onSuccess }) => {
     try {
       await api.post('/reservations', {
         equipment_id: equipment.id,
-        start_date: startDate,
-        end_date: endDate
+        start_date: `${startDate} 00:00:00`,
+        end_date: `${endDate} 23:59:59`
       });
       onSuccess();
       onClose();

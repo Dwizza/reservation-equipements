@@ -21,6 +21,7 @@ class UpdateReservationRequest extends FormRequest
             'status' => ['sometimes', 'required', 'string', Rule::in([
                 Reservation::STATUS_PENDING, 
                 Reservation::STATUS_APPROVED, 
+                Reservation::STATUS_REJECTED,
                 Reservation::STATUS_RETURNED
             ])],
         ];

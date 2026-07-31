@@ -19,6 +19,7 @@ class Reservation extends Model
 
     public const STATUS_PENDING = 'En attente';
     public const STATUS_APPROVED = 'Approuvée';
+    public const STATUS_REJECTED = 'Rejetée';
     public const STATUS_RETURNED = 'Restituée';
 
     protected function casts(): array

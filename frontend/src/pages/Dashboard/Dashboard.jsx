@@ -46,11 +46,13 @@ const Dashboard = () => {
 
   const getStatusBadge = (status) => {
     switch (status) {
-      case 'en_attente':
+      case 'En attente':
         return <span className="px-3 py-1 bg-amber-50 text-amber-600 rounded-full text-xs font-medium border border-amber-200">En attente</span>;
-      case 'approuvee':
+      case 'Approuvée':
         return <span className="px-3 py-1 bg-green-50 text-green-600 rounded-full text-xs font-medium border border-green-200">Approuvée</span>;
-      case 'restituee':
+      case 'Rejetée':
+        return <span className="px-3 py-1 bg-red-50 text-red-600 rounded-full text-xs font-medium border border-red-200">Rejetée</span>;
+      case 'Restituée':
         return <span className="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-xs font-medium border border-slate-200">Restituée</span>;
       default:
         return <span className="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-xs font-medium">{status}</span>;

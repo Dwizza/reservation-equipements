@@ -34,7 +34,7 @@ class DashboardController extends Controller
         // Stats spécifiques à l'Admin
         if ($isAdmin) {
             $data['admin_stats'] = [
-                'pending_reservations' => Reservation::where('status', 'en_attente')->count(),
+                'pending_reservations' => Reservation::where('status', Reservation::STATUS_PENDING)->count(),
                 'recent_all' => Reservation::with(['equipment', 'user'])
                     ->orderBy('created_at', 'desc')
                     ->take(5)
