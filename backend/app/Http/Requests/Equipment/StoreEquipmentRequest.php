@@ -2,28 +2,24 @@
 
 namespace App\Http\Requests\Equipment;
 
-use Illuminate\Contracts\Validation\ValidationRule;
+use App\Models\Equipment;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreEquipmentRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, ValidationRule|array<mixed>|string>
-     */
     public function rules(): array
     {
         return [
-            //
+            'name' => ['required', 'string', 'max:255'],
+            'category' => ['required', 'string', 'max:255'],
+            'serial_number' => ['required', 'string', 'max:255', 'unique:equipment,serial_number'],
+            'status' => ['nullable', 'string', Rule::in([Equipment::STATUS_DISPONIBLE, Equipment::STATUS_RESERVE, Equipment::STATUS_MAINTENANCE])],
         ];
     }
 }

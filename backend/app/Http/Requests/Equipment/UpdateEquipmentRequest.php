@@ -2,28 +2,26 @@
 
 namespace App\Http\Requests\Equipment;
 
-use Illuminate\Contracts\Validation\ValidationRule;
+use App\Models\Equipment;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateEquipmentRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, ValidationRule|array<mixed>|string>
-     */
     public function rules(): array
     {
+        $equipmentId = $this->route('equipment');
+        
         return [
-            //
+            'name' => ['sometimes', 'required', 'string', 'max:255'],
+            'category' => ['sometimes', 'required', 'string', 'max:255'],
+            'serial_number' => ['sometimes', 'required', 'string', 'max:255', Rule::unique('equipment', 'serial_number')->ignore($equipmentId)],
+            'status' => ['sometimes', 'required', 'string', Rule::in([Equipment::STATUS_DISPONIBLE, Equipment::STATUS_RESERVE, Equipment::STATUS_MAINTENANCE])],
         ];
     }
 }
