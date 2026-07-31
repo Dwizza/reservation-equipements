@@ -17,4 +17,5 @@ Route::prefix('auth')->group(function () {
 
 Route::middleware('auth:api')->group(function () {
     Route::apiResource('equipments', EquipmentController::class);
+    Route::apiResource('reservations', \App\Http\Controllers\Api\ReservationController::class);
 });

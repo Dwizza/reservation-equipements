@@ -19,6 +19,10 @@ class RepositoryServiceProvider extends ServiceProvider
             \App\Repositories\Contracts\EquipmentRepositoryInterface::class,
             \App\Repositories\Eloquent\EquipmentRepository::class
         );
+        $this->app->bind(
+            \App\Repositories\Contracts\ReservationRepositoryInterface::class,
+            \App\Repositories\Eloquent\ReservationRepository::class
+        );
     }
 
     /**

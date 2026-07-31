@@ -2,28 +2,21 @@
 
 namespace App\Http\Requests\Reservation;
 
-use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreReservationRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
-        return false;
+        return auth('api')->check();
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, ValidationRule|array<mixed>|string>
-     */
     public function rules(): array
     {
         return [
-            //
+            'equipment_id' => ['required', 'integer', 'exists:equipment,id'],
+            'start_date' => ['required', 'date', 'date_format:Y-m-d H:i:s'],
+            'end_date' => ['required', 'date', 'date_format:Y-m-d H:i:s', 'after:start_date'],
         ];
     }
 }

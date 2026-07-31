@@ -7,13 +7,17 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class ReservationResource extends JsonResource
 {
-    /**
-     * Transform the resource into an array.
-     *
-     * @return array<string, mixed>
-     */
     public function toArray(Request $request): array
     {
-        return parent::toArray($request);
+        return [
+            'id' => $this->id,
+            'user' => new UserResource($this->whenLoaded('user')),
+            'equipment' => new EquipmentResource($this->whenLoaded('equipment')),
+            'start_date' => $this->start_date,
+            'end_date' => $this->end_date,
+            'status' => $this->status,
+            'created_at' => $this->created_at,
+            'updated_at' => $this->updated_at,
+        ];
     }
 }

@@ -2,28 +2,27 @@
 
 namespace App\Http\Requests\Reservation;
 
-use Illuminate\Contracts\Validation\ValidationRule;
+use App\Models\Reservation;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateReservationRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
-        return false;
+        return auth('api')->check();
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, ValidationRule|array<mixed>|string>
-     */
     public function rules(): array
     {
         return [
-            //
+            'start_date' => ['sometimes', 'required', 'date', 'date_format:Y-m-d H:i:s'],
+            'end_date' => ['sometimes', 'required', 'date', 'date_format:Y-m-d H:i:s', 'after:start_date'],
+            'status' => ['sometimes', 'required', 'string', Rule::in([
+                Reservation::STATUS_PENDING, 
+                Reservation::STATUS_APPROVED, 
+                Reservation::STATUS_RETURNED
+            ])],
         ];
     }
 }

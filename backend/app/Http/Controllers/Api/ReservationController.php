@@ -3,47 +3,94 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Reservation\StoreReservationRequest;
+use App\Http\Requests\Reservation\UpdateReservationRequest;
+use App\Http\Resources\ReservationResource;
+use App\Services\ReservationService;
+use Exception;
 use Illuminate\Http\Request;
 
 class ReservationController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    protected $reservationService;
+
+    public function __construct(ReservationService $reservationService)
     {
-        //
+        $this->reservationService = $reservationService;
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function index(Request $request)
     {
-        //
+        $user = auth('api')->user();
+        $filters = $request->only(['status']);
+
+        // Admin sees all reservations, Normal user sees only theirs
+        if ($user->isAdmin()) {
+            $reservations = $this->reservationService->getAllReservations($filters);
+        } else {
+            $reservations = $this->reservationService->getUserReservations($user->id, $filters);
+        }
+        
+        return ReservationResource::collection($reservations);
     }
 
-    /**
-     * Display the specified resource.
-     */
+    public function store(StoreReservationRequest $request)
+    {
+        $data = $request->validated();
+        $data['user_id'] = auth('api')->id(); // Force the current user's ID
+
+        $reservation = $this->reservationService->createReservation($data);
+        
+        return response()->json([
+            'message' => 'Réservation créée avec succès',
+            'data' => new ReservationResource($reservation)
+        ], 201);
+    }
+
     public function show(string $id)
     {
-        //
+        $reservation = $this->reservationService->getReservationById($id);
+        
+        if (!$reservation) {
+            return response()->json(['message' => 'Réservation introuvable'], 404);
+        }
+
+        $user = auth('api')->user();
+        if (!$user->isAdmin() && $reservation->user_id !== $user->id) {
+            return response()->json(['message' => 'Non autorisé'], 403);
+        }
+
+        return new ReservationResource($reservation);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    public function update(UpdateReservationRequest $request, string $id)
     {
-        //
+        try {
+            $reservation = $this->reservationService->updateReservation($id, $request->validated(), auth('api')->user());
+
+            return response()->json([
+                'message' => 'Réservation mise à jour avec succès',
+                'data' => new ReservationResource($reservation)
+            ]);
+        } catch (Exception $e) {
+            $code = $e->getCode() ?: 400;
+            return response()->json(['message' => $e->getMessage()], $code);
+        }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
-        //
+        try {
+            $deleted = $this->reservationService->deleteReservation($id, auth('api')->user());
+
+            if (!$deleted) {
+                return response()->json(['message' => 'Réservation introuvable'], 404);
+            }
+
+            return response()->json(['message' => 'Réservation supprimée avec succès'], 200);
+        } catch (Exception $e) {
+            $code = $e->getCode() ?: 400;
+            return response()->json(['message' => $e->getMessage()], $code);
+        }
     }
 }
